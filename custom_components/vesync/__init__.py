@@ -87,11 +87,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     device_dict = await async_process_devices(hass, manager)
 
+    await forward_setup(config_entry, [
+        p
+        for p, vs_p in PLATFORMS.items()
+        if device_dict[vs_p]
+    ])
+
     for p, vs_p in PLATFORMS.items():
         hass.data[DOMAIN][config_entry.entry_id][vs_p] = []
         if device_dict[vs_p]:
             hass.data[DOMAIN][config_entry.entry_id][vs_p].extend(device_dict[vs_p])
-            hass.async_create_task(forward_setup(config_entry, p))
 
     async def async_new_device_discovery(service: ServiceCall) -> None:
         """Discover if new devices should be added."""
